@@ -21,7 +21,7 @@ sysbench.cmdline.options = {
     ["num-docs"] = {"How many documents in a collection", 1000},
     ["batch-size"] = {"batch insert size", 1000},
     ["idle-connections"] = {"How many idle connections to create.", 100},
-    ["idle-interval"] = {"Interval after which idle connections do a single find().", 10},
+    ["idle-interval"] = {"Interval after which idle connections do a single find().", 300},
     ["verbose"] = {"verbosity", 0}
 }
 

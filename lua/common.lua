@@ -8,7 +8,7 @@ sysbench.cmdline.options = {
     -- https://github.com/akopytov/sysbench/issues/151
     ["mongo-url"] = {"Mongo Client connector string", "mongodb://localhost:27017/"},
     ["db-name"] = {"Database name", "sbtest"},
-    ["collection-name"] = {"Collection name", "ase_benchmark"},
+    ["collection-name"] = {"Collection name", "sbtest"},
     ["num-docs"] = {"How many documents in a collection", 1000},
     ["batch-size"] = {"batch insert size", 1000},
     ["csv-file"] = {"File to report statistics when --report-interval is set (0 to print to stdout)", "sysbench.csv"},

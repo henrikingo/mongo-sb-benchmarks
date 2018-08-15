@@ -1,9 +1,5 @@
 #!/usr/bin/env sysbench
-local ffi = require('ffi')
-local pretty = require 'pl.pretty'
-local MongoClient = require("mongorover.MongoClient")
-local JSON = require("JSON")
-
+require("common")
 
 ffi.cdef("int sleep(int seconds);")
 ffi.cdef[[
@@ -11,41 +7,26 @@ void sb_counter_inc(int thread_id, sb_counter_type type);
 ]]
 
 
+-- Options specific to this test
+sysbench.cmdline.options["idle-connections"] = {"How many idle connections to create.", 100}
+sysbench.cmdline.options["idle-interval"] = {"Seconds after which idle connections do a single find().", 300}
 
-sysbench.cmdline.options = {
-    -- the default values for built-in options are currently ignored, see 
-    -- https://github.com/akopytov/sysbench/issues/151
-    ["mongo-url"] = {"Mongo Client connector string", "mongodb://localhost:27017/"},
-    ["db-name"] = {"Database name", "sbtest"},
-    ["collection-name"] = {"Collection name", "ase_benchmark"},
-    ["num-docs"] = {"How many documents in a collection", 1000},
-    ["batch-size"] = {"batch insert size", 1000},
-    ["idle-connections"] = {"How many idle connections to create.", 100},
-    ["idle-interval"] = {"Interval after which idle connections do a single find().", 300},
-    ["verbose"] = {"verbosity", 0}
-}
-
-function getCollection ()
-local client = MongoClient.new(sysbench.opt.mongo_url)
-local db = client:getDatabase(sysbench.opt.db_name)
-return db:getCollection(sysbench.opt.collection_name)
-end
 
 function prepare ()
-local coll = getCollection()
+    local coll = getCollection()
 
-local arrayOfDocuments = {}
-for i=1, sysbench.opt.num_docs do
-    arrayOfDocuments[i] = {_id = i, random = sysbench.rand.uniform(1, 1024)}
-end
-if sysbench.opt.verbose > 0 then
-    pretty.dump(arrayOfDocuments)
-end
-local result = coll:insert_many(arrayOfDocuments)
+    local arrayOfDocuments = {}
+    for i=1, sysbench.opt.num_docs do
+        arrayOfDocuments[i] = {_id = i, random = sysbench.rand.uniform(1, 1024)}
+    end
+    if sysbench.opt.verbose > 0 then
+        pretty.dump(arrayOfDocuments)
+    end
+    local result = coll:insert_many(arrayOfDocuments)
 
-if sysbench.opt.verbose > 0 then
-    pretty.dump(result)
-end
+    if sysbench.opt.verbose > 0 then
+        pretty.dump(result)
+    end
 end
 
 function cleanup()
@@ -105,32 +86,19 @@ function idle_event()
         end
     else
         -- When not pinging idle connections, act like a regular thread
-        -- For discussion: Could also sleep here so that all busy threads are always busy and this one just does the idle threads.
         busy_event()
     end
 end
 
 function sysbench.hooks.report_intermediate(stat)
-    print(JSON:encode(stat))
+    common_report_intermediate(stat)
 end
 
 function sysbench.hooks.report_cumulative(stat)
-    -- Dump options. For example, we want to see the nr of threads that was used.
-    print("--- sysbench json options start ---")
-    print(JSON:encode(sysbench.opt))
-    print("--- sysbench json options end ---")
-
-    -- Dum raw stats.
-    print("--- sysbench json stats start ---")
-    print(JSON:encode(stat))
-    print("--- sysbench json stats end ---")
-
     -- The "results" section contains the results that are supposed to be "interesting" for this
     -- benchmark. The key names should be useful as lables.
-    results = {}
-    results["latency_" .. sysbench.opt.percentile] = stat.latency_pct
-    results["throughput"] = stat.reads / stat.time_total
-    print("--- sysbench json results start ---")
-    print(JSON:encode(results))
-    print("--- sysbench json results end ---")
+    my_results = {}
+    my_results["latency_" .. sysbench.opt.percentile] = stat.latency_pct * 1000
+    my_results["throughput"] = stat.reads / stat.time_total
+    common_report_cumulative(stat, my_results)
 end

@@ -26,3 +26,8 @@ cd ..
 
 luarocks install --local https://raw.githubusercontent.com/jiyinyiyong/json-lua/master/json-lua-0.1-3.rockspec
 luarocks install --local penlight
+
+# I don't know what's out of sync with the mongorover path here, but this fixed it
+cd .luarocks
+ln -s lib64 lib
+cd ..

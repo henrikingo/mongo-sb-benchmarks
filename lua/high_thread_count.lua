@@ -98,7 +98,7 @@ function sysbench.hooks.report_cumulative(stat)
     -- The "results" section contains the results that are supposed to be "interesting" for this
     -- benchmark. The key names should be useful as lables.
     my_results = {}
-    my_results["latency_" .. sysbench.opt.percentile] = stat.latency_pct * 1000
-    my_results["throughput"] = stat.reads / stat.time_total
+    my_results["latency_" .. sysbench.opt.percentile .. "_ms"] = stat.latency_pct * 1000
+    my_results["ops_per_sec"] = stat.reads / stat.time_total
     common_report_cumulative(stat, my_results)
 end

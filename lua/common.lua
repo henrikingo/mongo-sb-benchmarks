@@ -1,5 +1,5 @@
 local ffi = require('ffi')
-local pretty = require 'pl.pretty'
+pretty = require 'pl.pretty'
 local MongoClient = require("mongorover.MongoClient")
 local JSON = require("JSON")
 
@@ -17,10 +17,16 @@ sysbench.cmdline.options = {
 -- Add your own options in the benchmark file like:
 -- sysbench.cmdline.options["opt"] = {"Description", "default value"}
 
-function getCollection ()
+function getDB()
     local client = MongoClient.new(sysbench.opt.mongo_url)
-    local db = client:getDatabase(sysbench.opt.db_name)
-    return db:getCollection(sysbench.opt.collection_name)
+    return client:getDatabase(sysbench.opt.db_name)
+end
+
+function getCollection (n)
+    n = tostring(n or "")
+    local db = getDB()
+    local collection_name = sysbench.opt.collection_name .. n
+    return db:getCollection(collection_name)
 end
 
 local csv_headers = "time,threads,events,ops,reads,writes,other,latency_ms,errors,reconnects"

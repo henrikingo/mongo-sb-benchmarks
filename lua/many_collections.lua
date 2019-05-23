@@ -129,6 +129,7 @@ function do_batch(coll, start_id, stop_id)
     if sysbench.opt.verbosity >= 4 then
         pretty.dump(result)
     end
+    ffi.C.sb_counter_inc(sysbench.tid, ffi.C.SB_CNT_OTHER)
 end
 
 -- End of prepare related functions
@@ -140,16 +141,24 @@ function cleanup()
     db:drop_database()
 end
 
+local parallel_prepare_done = false
 function thread_init(thread_id)
-    if sysbench.opt.parallel_prepare then
-        parallel_prepare(thread_id, sysbench.opt.threads)
-    end
+    parallel_prepare_done = false
 end
 
 function thread_done(thread_id)
 end
 
 function event(thread_id)
+    if sysbench.opt.parallel_prepare then
+        if parallel_prepare_done then
+            return
+        end
+        parallel_prepare(thread_id, sysbench.opt.threads)
+        parallel_prepare_done = true
+        return
+    end
+
     read()
 end
 
@@ -210,9 +219,14 @@ function sysbench.hooks.report_cumulative(stat)
     -- The "results" section contains the results that are supposed to be "interesting" for this
     -- benchmark. The key names should be useful as labels.
     my_results = {}
-    my_results["latency_" .. sysbench.opt.percentile .. "_ms"] = stat.latency_pct * 1000
-    my_results["ops_per_sec"] = stat.reads / stat.time_total + stat.writes / stat.time_total
-    my_results["reads_per_sec"] = stat.reads / stat.time_total
-    my_results["writes_per_sec"] = stat.writes / stat.time_total
+    if sysbench.opt.parallel_prepare then
+        my_results["batches_per_sec"] = stat.other / stat.time_total
+    else
+        my_results["latency_" .. sysbench.opt.percentile .. "_ms"] = stat.latency_pct * 1000
+        my_results["ops_per_sec"] = stat.reads / stat.time_total + stat.writes / stat.time_total
+        my_results["reads_per_sec"] = stat.reads / stat.time_total
+        my_results["writes_per_sec"] = stat.writes / stat.time_total
+    end
+
     common_report_cumulative(stat, my_results)
 end

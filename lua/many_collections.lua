@@ -223,10 +223,10 @@ function sysbench.hooks.report_cumulative(stat)
         my_results["batches_per_sec"] = stat.other / stat.time_total
     else
         my_results["latency_" .. sysbench.opt.percentile .. "_ms"] = stat.latency_pct * 1000
-        my_results["ops_per_sec"] = stat.reads / stat.time_total + stat.writes / stat.time_total
         my_results["reads_per_sec"] = stat.reads / stat.time_total
         if stat.writes > 0 then
             my_results["writes_per_sec"] = stat.writes / stat.time_total
+            my_results["ops_per_sec"] = stat.reads / stat.time_total + stat.writes / stat.time_total
         end
     end
 

@@ -34,6 +34,9 @@ make
 sudo make install
 cd ../..
 
+echo export LD_LIBRARY_PATH=/usr/local/lib64/:$LD_LIBRARY_PATH >> .bashrc
+
+
 #luarocks install --local mongorover
 rm -rf mongorover || true
 git clone https://github.com/mongodb-labs/mongorover.git

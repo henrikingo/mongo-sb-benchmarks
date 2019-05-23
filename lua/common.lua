@@ -17,9 +17,14 @@ sysbench.cmdline.options = {
 -- Add your own options in the benchmark file like:
 -- sysbench.cmdline.options["opt"] = {"Description", "default value"}
 
+-- Without the global, new connection created for each query
+local static_db = nil
 function getDB()
-    local client = MongoClient.new(sysbench.opt.mongo_url)
-    return client:getDatabase(sysbench.opt.db_name)
+    if not static_db then
+        local client = MongoClient.new(sysbench.opt.mongo_url)
+        static_db = client:getDatabase(sysbench.opt.db_name)
+    end
+    return static_db
 end
 
 function getCollection (n)

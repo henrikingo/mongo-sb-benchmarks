@@ -16,7 +16,7 @@ function prepare()
     parallel_prepare(0, 1)
 end
 
-
+local thread_time_keepalive = os.time()
 function parallel_prepare (thread_id, num_threads)
     if thread_id > sysbench.opt.num_collections then
         return
@@ -32,8 +32,12 @@ function parallel_prepare (thread_id, num_threads)
     end
     -- unlike python, lua includes the last parameter to for
     for n=my_first_collection, my_first_collection + my_num_collections - 1 do
-        if sysbench.opt.verbosity >= 4 then
+        -- print progress every 5 min. Among other things to avoid timeouts.
+        if os.time() > thread_time_keepalive + 5*60 or
+                sysbench.opt.verbosity >= 4 then
+
             print("thread_id " .. thread_id .. " collection " .. n)
+            thread_time_keepalive = os.time()
         end
         local coll = getCollection(n)
         coll:drop()
@@ -144,6 +148,7 @@ end
 local parallel_prepare_done = false
 function thread_init(thread_id)
     parallel_prepare_done = false
+    thread_time_keepalive = os.time()
 end
 
 function thread_done(thread_id)

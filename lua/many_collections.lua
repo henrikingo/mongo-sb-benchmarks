@@ -8,6 +8,7 @@ void sb_counter_inc(int thread_id, sb_counter_type type);
 
 -- Options specific to this test
 sysbench.cmdline.options["parallel-prepare"] = {"Hack: Use 'sysbench many_collections.lua run --parallel-prepare' instead of regular prepare.", false}
+sysbench.cmdline.options["loader-sleep"] = {"Loader thread should sleep N seconds before next batch insert.", 0}
 sysbench.cmdline.options["num-collections"] = {"How many collections to create. (Each contains num-docs.)", 10}
 sysbench.cmdline.options["num-indexes"] = {"Number of secondary indexes, in addition to _id.", 0}
 sysbench.cmdline.options["distribution"] = {"uniform or zipfian", "uniform"}
@@ -48,6 +49,7 @@ function parallel_prepare (thread_id, num_threads)
         for b=0, num_batches-1 do
             local start_id = b * sysbench.opt.batch_size + 1
             local stop_id = start_id + sysbench.opt.batch_size - 1
+            os.sleep(sysbench.opt.loader_sleep)
             do_batch(coll, start_id, stop_id)
         end
         if sysbench.opt.verbosity >= 4 then

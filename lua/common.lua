@@ -83,3 +83,10 @@ function common_report_cumulative(stat, my_results)
     print(JSON:encode(my_results))
     print("--- sysbench json results end ---")
 end
+
+
+-- standard function library :-)
+ffi.cdef("int usleep(int microseconds);"
+function usleep(microseconds)
+    ffi.C.usleep(microseconds)
+end

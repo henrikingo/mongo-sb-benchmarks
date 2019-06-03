@@ -49,7 +49,7 @@ function parallel_prepare (thread_id, num_threads)
         for b=0, num_batches-1 do
             local start_id = b * sysbench.opt.batch_size + 1
             local stop_id = start_id + sysbench.opt.batch_size - 1
-            os.sleep(sysbench.opt.loader_sleep)
+            usleep(sysbench.opt.loader_sleep*1000*1000)
             do_batch(coll, start_id, stop_id)
         end
         if sysbench.opt.verbosity >= 4 then

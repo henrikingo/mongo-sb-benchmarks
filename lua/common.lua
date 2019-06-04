@@ -86,7 +86,7 @@ end
 
 
 -- standard function library :-)
-ffi.cdef("int usleep(int microseconds);"
+ffi.cdef("int usleep(int microseconds);")
 function usleep(microseconds)
     ffi.C.usleep(microseconds)
 end
